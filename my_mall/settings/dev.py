@@ -20,8 +20,8 @@ BASE_DIR = Path(__file__).resolve(strict=True).parent.parent # 因为我们更�
 
 # 追加导包路径，简化app的注册导入
 sys.path.insert(0, os.path.join(BASE_DIR,'apps'))
-# 查看项目导包路径
-print('项目导包路径：',sys.path)
+# # 查看项目导包路径
+# print('项目导包路径：',sys.path)
 
 
 # Quick-start development settings - unsuitable for production
@@ -142,43 +142,53 @@ SESSION_CACHE_ALIAS = "session" # 使用别名为'session'的缓存保存session
 LOGGING = {
     'version': 1,
     'disable_existing_loggers': False,  # 是否禁用已经存在的日志器
-    'formatters': {  # 日志信息显示的格式
+    'formatters': {  # 日志的格式，设置了2种
         'verbose': {
-            'format': '%(levelname)s %(asctime)s %(module)s %(lineno)d %(message)s'
+            'format': '---%(levelname)s %(asctime)s %(module)s %(lineno)d %(message)s---'
         },
         'simple': {
-            'format': '%(levelname)s %(module)s %(lineno)d %(message)s'
+            'format': '---%(levelname)s %(module)s %(lineno)d %(message)s---'
         },
     },
-    'filters': {  # 对日志进行过滤
+    'filters': {  # 日志过滤器
         'require_debug_true': {  # django在debug模式下才输出日志
             '()': 'django.utils.log.RequireDebugTrue',
         },
     },
-    'handlers': {  # 日志处理方法
+    'handlers': {  # 日志处理方式，设置了2种
         'console': {  # 向终端中输出日志
             'level': 'INFO',
             'filters': ['require_debug_true'],
             'class': 'logging.StreamHandler',
-            'formatter': 'simple'
+            'formatter': 'simple' # 输出为 sample 格式
         },
         'file': {  # 向文件中输出日志
             'level': 'INFO',
             'class': 'logging.handlers.RotatingFileHandler',
-            'filename': os.path.join(os.path.dirname(BASE_DIR), 'logs/mall.log'),  # 日志文件的位置
-            'maxBytes': 300 * 1024 * 1024,
-            'backupCount': 10,
-            'formatter': 'verbose'
+            'filename': os.path.join(os.path.dirname(BASE_DIR), 'logs/mall.log'),  # 日志文件的位置，写满一个文件后自动创建下一个文件
+            'maxBytes': 1 * 1024 * 1024, # 每个日志文件的最大容量，1m
+            'backupCount': 10, # 最多保存的日志文件的数量
+            'formatter': 'verbose' # 输出为 verbose 格式
         },
     },
-    'loggers': {  # 日志器
-        'django': {  # 定义了一个名为django的日志器
+    'loggers': {  # 基于上面的配置，创建日志记录器
+        'django': {  # 定义了一个名为django的日志器，该日志器的配置如下
             'handlers': ['console', 'file'],  # 可以同时向终端与文件中输出日志
-            'propagate': True,  # 是否继续传递日志信息
+            'propagate': True,  # 是否将日志消息传播到更高级别的日志记录器
             'level': 'INFO',  # 日志器接收的最低日志级别
         },
     }
 }
+
+# # 日志器的使用：
+# import logging
+# # 1 先选择上述创建的名为 django 的日志记录器
+# logger = logging.getLogger('django')
+# # 2 再输出日志
+# logger.debug('测试logging模块debug')
+# logger.info('测试logging模块info')
+# logger.error('测试logging模块error')
+
 
 # Password validation
 # https://docs.djangoproject.com/en/3.1/ref/settings/#auth-password-validators
