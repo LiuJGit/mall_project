@@ -3,7 +3,8 @@
 <head>
 	<meta http-equiv="Content-Type" content="text/html;charset=UTF-8">
 	<title>美多商城-注册</title>
-	<link rel="stylesheet" type="text/css" href="{{ static('css/reset.css') }}">
+	<!-- <link rel="stylesheet" type="text/css" href="{{ static('css/reset.css') }}"> -->
+	<link rel="stylesheet" type="text/css" href="/static/css/reset.css">
 	<link rel="stylesheet" type="text/css" href="{{ static('css/main.css') }}">
     <script type="text/javascript" src="{{ static('js/vue-2.5.16.js') }}"></script>
     <script type="text/javascript" src="{{ static('js/axios-0.18.0.min.js') }}"></script>
@@ -12,7 +13,7 @@
     <div id="app">
 	<div class="register_con">
 		<div class="l_con fl">
-			<a href="index.html" class="reg_logo"><img src="../static/images/logo.png"></a>
+			<a href="index.html" class="reg_logo"><img src="/static/images/logo.png"></a>
 			<div class="reg_slogan">商品美 · 种类多 · 欢迎光临</div>
 			<div class="reg_banner"></div>
 		</div>
@@ -48,7 +49,7 @@
 						<li>
 							<label>图形验证码:</label>
 							<input type="text" name="image_code" id="pic_code" class="msg_input">
-							<img src="../static/images/pic_code.jpg" alt="图形验证码" class="pic_code">
+							<img src="/static/images/pic_code.jpg" alt="图形验证码" class="pic_code">
 							<span class="error_tip">请填写图形验证码</span>
 						</li>
 						<li>
