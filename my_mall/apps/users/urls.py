@@ -1,5 +1,5 @@
 '''
-新建子路由
+新建users子路由
 '''
 from django.conf.urls import url
 from . import views

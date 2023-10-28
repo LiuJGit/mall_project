@@ -2,6 +2,7 @@
 <html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en">
 <head>
 	<meta http-equiv="Content-Type" content="text/html;charset=UTF-8">
+	<link rel="icon" href="/static/favicon.ico" type="image/x-icon">
 	<title>美多商城-注册</title>
 	<!-- <link rel="stylesheet" type="text/css" href="{{ static('css/reset.css') }}"> -->
 	<link rel="stylesheet" type="text/css" href="/static/css/reset.css">
@@ -62,6 +63,9 @@
 							<input type="checkbox" v-model="allow" @change="check_allow" name="allow" id="allow">
 							<label>同意”美多商城用户使用协议“</label>
 							<span class="error_tip" v-show="error_allow">请勾选用户协议</span>
+							{% if register_errmsg %}
+                                <span class="error_tip">{{ register_errmsg }}</span>
+                            {% endif %}
 						</li>
 						<li class="reg_sub">
 							<input type="submit" value="注 册">
