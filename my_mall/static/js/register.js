@@ -56,6 +56,7 @@ let vm = new Vue({
                         }
                     })
                     .catch(error => {
+                        // 失败控制台打印信息
                         console.log(error.response);
                     })
             }
@@ -85,6 +86,28 @@ let vm = new Vue({
             } else {
                 this.error_mobile_message = '您输入的手机号格式不正确';
                 this.error_mobile = true;
+            }
+
+            // 判断手机号是否重复注册
+            if (this.error_mobile == false) { // 只有当用户输入的手机号满足条件时才会去判断
+                let url = '/mobiles/' + this.mobile + '/count/';
+                axios.get(url, {
+                    responseType: 'json'
+                })
+                    .then(response => {
+                        if (response.data.count == 1) {
+                            // 手机号已存在
+                            this.error_mobile_message = '手机号已存在';
+                            this.error_mobile = true;
+                        } else {
+                            // 手机号不存在
+                            this.error_mobile = false;
+                        }
+                    })
+                    .catch(error => {
+                        // 失败控制台打印信息
+                        console.log(error.response);
+                    })
             }
         },
         // 校验是否勾选协议
