@@ -73,7 +73,10 @@ class RegisterView(View):
         # return http.HttpResponse('注册成功，重定向到首页')
         # return redirect('/')
         # reverse('contents:index') == '/'
-        return redirect(reverse('contents:index'))
+        response = redirect(reverse('contents:index'))
+        # 在cookie中设置用户名，供vue读取，并在首页中显示，有效期15天
+        response.set_cookie('username', user.username, max_age=3600 * 24 * 15)
+        return response
     
 
 class UsernameCountView(View):
@@ -132,6 +135,7 @@ class LoginView(View):
         # 这样，from django.contrib.auth import authenticate 导入的 authenticate 就是我们自定义的 authenticate 方法。
         user = authenticate(username=username, password=password)
         if user is None:
+            # 登录失败
             return render(request, 'login.html', {'account_errmsg': '账号或密码错误'})
 
         # 登录，具体操作就是状态保持写session，redis保存一些信息，里面什么内容可以先不用关注
@@ -144,5 +148,8 @@ class LoginView(View):
             # 记住登录：状态保持周期为两周:默认是两周
             request.session.set_expiry(None)
 
-        # 响应结果:重定向到首页
-        return redirect(reverse('contents:index'))
+        # 登录成功，响应结果:重定向到首页
+        response = redirect(reverse('contents:index'))
+        # 在cookie中设置用户名，供vue读取，并在首页中显示，有效期15天
+        response.set_cookie('username', user.username, max_age=3600 * 24 * 15)
+        return response
