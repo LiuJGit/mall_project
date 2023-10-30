@@ -5,7 +5,7 @@ from django import http
 from users.models import User
 from my_mall.utils.response_code import RETCODE
 from django.db import DatabaseError
-from django.contrib.auth import login, authenticate
+from django.contrib.auth import login, authenticate, logout
 from django.urls import reverse
 import logging
 
@@ -152,4 +152,24 @@ class LoginView(View):
         response = redirect(reverse('contents:index'))
         # 在cookie中设置用户名，供vue读取，并在首页中显示，有效期15天
         response.set_cookie('username', user.username, max_age=3600 * 24 * 15)
+        return response
+    
+
+class LogoutView(View):
+    """用户退出登录"""
+
+    def get(self, request):
+        """实现用户退出登录的逻辑"""
+        # 登录是写session，那么登出就是清除状态保持信息
+        # Django用户认证系统提供了logout()方法
+        # 封装了清理session的操作，帮助我们快速实现登出一个用户
+        logout(request)
+
+        # 退出登录后重定向到首页
+        response = redirect(reverse('contents:index'))
+
+        # 删除cookies中的用户名，这样首页就不会显示用户名了
+        response.delete_cookie('username')
+
+        # 响应结果
         return response
