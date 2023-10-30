@@ -233,7 +233,12 @@ STATIC_URL = '/static/'
 # 配置静态文件加载路径
 STATICFILES_DIRS = [os.path.join(BASE_DIR, 'static')]
 
+# 'django.conf.global_settings'中可以查看所有的全局默认设置
+
 # 指定本项目用户模型类
 # 'django.conf.global_settings'中可以查看默认设置，AUTH_USER_MODEL = 'auth.User'
 # 修改为自定义的模型类，AUTH_USER_MODEL = '应用名.模型类名'
 AUTH_USER_MODEL = 'users.User'
+
+# 指定自定义的用户认证后端
+AUTHENTICATION_BACKENDS = ['users.utils.UsernameMobileAuthBackend']

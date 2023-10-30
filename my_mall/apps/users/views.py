@@ -126,7 +126,10 @@ class LoginView(View):
 
         # 认证用户:使用账号查询用户是否存在，如果用户存在，再校验密码是否正确，最后返回user对象。
         # 可以看到，上述过程完全可以自己实现而不调用authenticate。
-        # 另外，我们会修改全局配置，指定自定义的authentication backends，实现多用户登录（用户名or手机号均能登录）。
+        # 默认用户认证后端 AUTHENTICATION_BACKENDS = ['django.contrib.auth.backends.ModelBackend']
+        # 下面，我们在user.utils.py中自定义authentication backends，以实现多用户登录（用户名or手机号均能登录），
+        # 并在项目setting中配置自定义后端：AUTHENTICATION_BACKENDS = ['users.utils.UsernameMobileAuthBackend']。
+        # 这样，from django.contrib.auth import authenticate 导入的 authenticate 就是我们自定义的 authenticate 方法。
         user = authenticate(username=username, password=password)
         if user is None:
             return render(request, 'login.html', {'account_errmsg': '账号或密码错误'})
