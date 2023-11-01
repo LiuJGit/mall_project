@@ -8,6 +8,7 @@ from django.db import DatabaseError
 from django.contrib.auth import login, authenticate, logout
 from django.urls import reverse
 import logging
+from django.contrib.auth.mixins import LoginRequiredMixin
 
 # Create your views here.
 
@@ -148,8 +149,20 @@ class LoginView(View):
             # 记住登录：状态保持周期为两周:默认是两周
             request.session.set_expiry(None)
 
-        # 登录成功，响应结果:重定向到首页
-        response = redirect(reverse('contents:index'))
+        # 登录成功，响应结果:
+        # (1) 请求的url**不含**{{ redirect_field_name }}参数，则重定向到首页；
+        # (2) 请求的url**含有**{{ redirect_field_name }}参数，则重定向到该参数给出的地址；
+        # 强调一下，可以看到，这里前端表单的action属性为空，因此表单提交时的目标地址默认为当前页面的URL。
+        # 这里表单发送的是 POST 请求，但我们也可以通过 GET 获取 URL 中的参数。
+        # {{ redirect_field_name }} 默认为 next.
+        next = request.GET.get('next')
+        if next:
+            # 重定向到 next
+            response = redirect(next)
+        else:
+            # 重定向到首页
+            response = redirect(reverse('contents:index'))
+
         # 在cookie中设置用户名，供vue读取，并在首页中显示，有效期15天
         response.set_cookie('username', user.username, max_age=3600 * 24 * 15)
         return response
@@ -175,24 +188,55 @@ class LogoutView(View):
         return response
     
 
-class UserInfoView(View):
-    """用户中心"""
+# class UserInfoView(View):
+#     """用户中心"""
 
+#     def get(self,request):
+#         """提供用户中心页面"""
+#         # 查看request对象的所有属性和方法
+#         print(dir(request))
+#         # request.user是一个用户实例对象，虽然是从request dot，但并不是浏览器发过来的，而是
+#         # django通过中间件'django.contrib.auth.middleware.AuthenticationMiddleware'生成的。
+#         # 查看源码可知，django是通过请求cookies中的sessionid去redis里面查user，只要request.COOKIES中不存在sessionid或redis中不存在相应的记录，
+#         # 都会返回一个AnonymousUser匿名用户对象，表示未登录。
+#         logger.info(request.user)
+#         logger.info(type(request.user))
+#         logger.info(request.COOKIES)
+#         logger.info(request.session)
+#         if request.user.is_authenticated:
+#             # 当用户登录后，才能访问用户中心。
+#             return render(request, 'user_center_info.html')
+#         else:
+#             # 如果用户未登录，就不允许访问用户中心，将用户引导到登录界面。
+#             return redirect(reverse('users:login'))
+        
+
+class UserInfoView(LoginRequiredMixin, View):
+    """用户中心
+    LoginRequiredMixin一定要放在View之前，因为这里是多继承，
+    且存在同名的方法，涉及到的MRO（Method Resolution Order）的知识点
+    """
+    
+    # login_url = '/login'
+    # redirect_field_name = '_from' # redirect_field_name 默认值为 'next'
+    """
+    访问需登录授权才能访问的页面 A，比如这里的用户中心页面：
+    (1) 已登录，则允许访问；
+    (2) 未登录，则重定向到 "{{ login_url }}/?{{ redirect_field_name }}={{ url_A }}"，记为 B。
+    这里我们借助模板语言给出了重定向的url，其中 {{ url_A }} 表示 A 的 url。
+
+    也就是说，我们最开始想访问 A，但因为没有登录，所以跳转到 B，而 B 实际上就是登录页面，只不过采用get请求的方式
+    拼接了参数 {{ redirect_field_name }}，其值为我们最开始想访问的 A 的 url。由此，对于这种情况，我们可以修改前
+    面登录视图的逻辑：拿到get请求参数 {{ redirect_field_name }} 的值，在成功登录后重定向到我们最开始想访问的 A，
+    而不是登录成功后统一重定向到index页面。整个过程就是：
+    `访问A-->发现未登录,跳转到B -->登录成功,跳转回A`
+    因此，redirect_field_name 默认取为 'next'，是表示登录成功后下一站的 url。这里我们也不妨令其为 '_from'，因为
+    这也是我们跳转到登录页面前，想要访问的地址。 
+
+    login_url 也可以在项目的配置文件中进行全局设置，只不过变量名要大写 LOGIN_URL。两处均设置时，这里 login_url 的
+    优先级更高。此外，无论在哪里设置，均不能使用 reverse 函数，而必须直接给出路径，因为程序存在加载先后的问题，否则会报错。
+    """
+    
     def get(self,request):
         """提供用户中心页面"""
-        # 查看request对象的所有属性和方法
-        print(dir(request))
-        # request.user是一个用户实例对象，虽然是从request dot，但并不是浏览器发过来的，而是
-        # django通过中间件'django.contrib.auth.middleware.AuthenticationMiddleware'生成的。
-        # 查看源码可知，django是通过请求cookies中的sessionid去redis里面查user，只要request.COOKIES中不存在sessionid或redis中不存在相应的记录，
-        # 都会返回一个AnonymousUser匿名用户对象，表示未登录。
-        logger.info(request.user)
-        logger.info(type(request.user))
-        logger.info(request.COOKIES)
-        logger.info(request.session)
-        if request.user.is_authenticated:
-            # 当用户登录后，才能访问用户中心。
-            return render(request, 'user_center_info.html')
-        else:
-            # 如果用户未登录，就不允许访问用户中心，将用户引导到登录界面。
-            return redirect(reverse('users:login'))
+        return render(request, 'user_center_info.html')
