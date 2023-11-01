@@ -138,7 +138,7 @@ class LoginView(View):
             # 登录失败
             return render(request, 'login.html', {'account_errmsg': '账号或密码错误'})
 
-        # 登录，具体操作就是状态保持写session，redis保存一些信息，里面什么内容可以先不用关注
+        # 登录，具体操作就是状态保持写session：在cookies中写一个sessionid，然后redis中也保存对应的session信息，表示该用户已登录。
         login(request, user)
         # 使用remembered确定状态保持周期（实现记住登录）
         if remembered != 'on':
@@ -173,3 +173,26 @@ class LogoutView(View):
 
         # 响应结果
         return response
+    
+
+class UserInfoView(View):
+    """用户中心"""
+
+    def get(self,request):
+        """提供用户中心页面"""
+        # 查看request对象的所有属性和方法
+        print(dir(request))
+        # request.user是一个用户实例对象，虽然是从request dot，但并不是浏览器发过来的，而是
+        # django通过中间件'django.contrib.auth.middleware.AuthenticationMiddleware'生成的。
+        # 查看源码可知，django是通过请求cookies中的sessionid去redis里面查user，只要request.COOKIES中不存在sessionid或redis中不存在相应的记录，
+        # 都会返回一个AnonymousUser匿名用户对象，表示未登录。
+        logger.info(request.user)
+        logger.info(type(request.user))
+        logger.info(request.COOKIES)
+        logger.info(request.session)
+        if request.user.is_authenticated:
+            # 当用户登录后，才能访问用户中心。
+            return render(request, 'user_center_info.html')
+        else:
+            # 如果用户未登录，就不允许访问用户中心，将用户引导到登录界面。
+            return redirect(reverse('users:login'))
